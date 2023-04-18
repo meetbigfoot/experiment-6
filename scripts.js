@@ -20,11 +20,11 @@ let schema = {
           address: 'Example',
           area: 'Example',
           distance: '2 blocks',
-          icon: 'an icon name from the FontAwesome library',
+          icon: 'FontAwesome icon name with no prefix',
           latitude: 12.34,
           longitude: -56.78,
           name: 'Example',
-          reason: 'why we think it is relevant to them',
+          reason: 'in less than 10 words why we think it is relevant to them',
           tags: 'comma-separated list of descriptors',
           tiktok_query: 'keywords to use to find this on TikTok',
         },
@@ -173,7 +173,7 @@ g('form').addEventListener('submit', e => {
       constants.prompt
     }. Now return only a JSON object that copies this schema: ${JSON.stringify(
       schema,
-    )}, use the values as hints, translate all values if the user specifies a language, and include anything else you want to say in the key called gpt_context.`,
+    )}, use the values as hints, only one or two recommendations per time of day, keep recommendations within 1 mile of each other, translate all values if the user specifies a language, and include anything else you want to say in the key called gpt_context.`,
   })
   heyI(history).then(text => {
     history.push({
@@ -235,7 +235,12 @@ const render = d => {
   })
   map.addControl(new mapboxgl.NavigationControl())
   constants.places.forEach(place => {
-    new mapboxgl.Marker().setLngLat([place.longitude, place.latitude]).addTo(map)
+    const marker = document.createElement('div')
+    marker.className = 'marker'
+    const icon = document.createElement('i')
+    icon.className = `fa-solid fa-${place.icon}`
+    marker.appendChild(icon)
+    new mapboxgl.Marker(marker).setLngLat([place.longitude, place.latitude]).addTo(map)
   })
 
   // story
