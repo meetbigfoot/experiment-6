@@ -3,6 +3,9 @@ const q = document.querySelectorAll.bind(document)
 
 mapboxgl.accessToken = 'pk.eyJ1IjoibWF0dGJvcm4iLCJhIjoiY2w1Ym0wbHZwMDh3eTNlbnh1aW51cm0ydyJ9.Z5h4Vkk8zqjf6JydrOGXGA'
 
+const ls = window.localStorage.getItem('makemyday')
+let saved = ls ? JSON.parse(ls) : []
+
 let constants = {
   places: [],
   prompt: 'replace with what the user types in',
@@ -34,95 +37,6 @@ let schema = {
   plan_color: 'replace with a hex value',
   plan_date: 'replace with human readable date',
   plan_title: 'make it fun and use emojis',
-}
-let test = {
-  gpt_context:
-    "Here's a plan for a full day in Venice Beach for you! It includes some fun activities and delicious food options.",
-  plan_date: 'Monday, Apr 17, 2023',
-  plan_title: '🌞 Fun Day in Venice Beach 🏖️',
-  plan: [
-    {
-      time_of_day: 'morning',
-      places: [
-        {
-          name: 'Venice Canals',
-          address: '1601 Ocean Front Walk, Venice, CA 90291',
-          latitude: 33.9835,
-          longitude: -118.4675,
-          area: 'Venice Beach',
-          distance: '0.9 miles',
-          reason: 'Explore the charming area and beautiful houses along the Venice canals.',
-          tags: 'scenic, Instagram-worthy, peaceful',
-          tiktok_query: 'venice beach canals',
-        },
-        {
-          name: 'Blue Bottle Coffee',
-          address: '1103 Abbot Kinney Blvd, Venice, CA 90291',
-          latitude: 33.9915,
-          longitude: -118.4632,
-          area: 'Venice Beach',
-          distance: '1.5 miles',
-          reason: 'Start the day with a delicious cup of coffee from this popular cafe.',
-          tags: 'coffee, breakfast, trendy',
-          tiktok_query: 'blue bottle coffee venice beach',
-        },
-      ],
-    },
-    {
-      time_of_day: 'afternoon',
-      places: [
-        {
-          name: 'Venice Skatepark',
-          address: '1800 Ocean Front Walk, Venice, CA 90291',
-          latitude: 33.9866,
-          longitude: -118.4744,
-          area: 'Venice Beach',
-          distance: '1.4 miles',
-          reason: 'Watch the local skateboarders and soak up the beach vibes at this iconic skatepark.',
-          tags: 'skateboarding, beach, free',
-          tiktok_query: 'venice beach skatepark',
-        },
-        {
-          name: 'Gjusta Bakery',
-          address: '320 Sunset Ave, Venice, CA 90291',
-          latitude: 33.9908,
-          longitude: -118.4645,
-          area: 'Venice Beach',
-          distance: '1.5 miles',
-          reason: 'Enjoy a delicious sandwich or pastry from this trendy bakery.',
-          tags: 'lunch, bakery, Instagram-worthy',
-          tiktok_query: 'gjusta bakery venice beach',
-        },
-      ],
-    },
-    {
-      time_of_day: 'evening',
-      places: [
-        {
-          name: 'The Otheroom',
-          address: '1201 Abbot Kinney Blvd, Venice, CA 90291',
-          latitude: 33.9899,
-          longitude: -118.463,
-          area: 'Venice Beach',
-          distance: '1.6 miles',
-          reason: "Enjoy a happy hour drink and snacks at this local spot that's not too touristy.",
-          tags: 'happy hour, drinks, casual',
-          tiktok_query: 'the otheroom venice beach',
-        },
-        {
-          name: 'The Tasting Kitchen',
-          address: '1633 Abbot Kinney Blvd, Venice, CA 90291',
-          latitude: 33.9882,
-          longitude: -118.4663,
-          area: 'Venice Beach',
-          distance: '1.3 miles',
-          reason: 'End the day with dinner at this high-end restaurant featuring New American cuisine.',
-          tags: 'dinner, upscale, romantic',
-          tiktok_query: 'the tasting kitchen venice beach',
-        },
-      ],
-    },
-  ],
 }
 
 let history = [
@@ -186,9 +100,9 @@ g('form').addEventListener('submit', e => {
 
 const render = d => {
   data = d
+  saveCollection()
   g('loading').style.display = 'none'
   constants.places = [] // reset places each time
-  console.log(data)
 
   // cover
   g('title').textContent = data.plan_title
@@ -244,8 +158,8 @@ const render = d => {
   })
 
   // story
+  g('media').innerHTML = ''
   constants.places.forEach(spot => {
-    console.log(spot)
     const story = document.createElement('div')
     story.className = 'iphone-14 story'
 
@@ -273,8 +187,36 @@ const render = d => {
   })
 }
 
-const simulate = () => {
+const loadCollection = item => {
+  console.log('Loading collection:', item)
   g('collection').style.display = 'flex'
-  constants.prompt = 'plan a fun day in venice beach'
-  render(test)
+  constants.prompt = item.prompt
+  render(item)
+}
+
+const saveCollection = () => {
+  if (saved[0].prompt === data.prompt) return
+  console.log('Saving collection:', data)
+  data.prompt = constants.prompt
+  saved.push(data)
+  localStorage.setItem('makemyday', JSON.stringify(saved))
+  listCollections()
+}
+
+const listCollections = () => {
+  g('saved').innerHTML = ''
+  console.log('Listing collections:', saved)
+  saved.forEach(item => {
+    const collection = document.createElement('div')
+    collection.className = 'collection'
+    collection.onclick = () => loadCollection(item)
+    const date = document.createElement('div')
+    date.className = 'collection-date'
+    date.textContent = item.plan_date
+    collection.appendChild(date)
+    const title = document.createElement('h2')
+    title.textContent = item.plan_title
+    collection.appendChild(title)
+    g('saved').appendChild(collection)
+  })
 }
