@@ -195,7 +195,7 @@ const loadCollection = item => {
 }
 
 const saveCollection = () => {
-  if (saved[0].prompt === data.prompt) return
+  // if (saved[0].prompt === data.prompt) return
   console.log('Saving collection:', data)
   data.prompt = constants.prompt
   saved.push(data)
