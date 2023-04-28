@@ -98,6 +98,20 @@ g('form').addEventListener('submit', e => {
   })
 })
 
+const tiktok = async query => {
+  const response = await fetch('https://us-central1-samantha-374622.cloudfunctions.net/tiktok', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      options: {
+        category: 'videos',
+        query: query,
+      },
+    }),
+  })
+  return await response.json()
+}
+
 const render = d => {
   data = d
   saveCollection()
@@ -159,7 +173,7 @@ const render = d => {
 
   // story
   g('media').innerHTML = ''
-  constants.places.forEach(spot => {
+  constants.places.forEach((spot, i) => {
     const story = document.createElement('div')
     story.className = 'iphone-14 story'
 
@@ -180,8 +194,31 @@ const render = d => {
     reason.textContent = spot.reason
     stack.appendChild(reason)
 
+    const video = document.createElement('div')
+    video.className = 'plan-video'
+    story.appendChild(video)
     group.appendChild(stack)
     story.appendChild(group)
+
+    if (!i) {
+      // only for the first
+      console.log('Fetching tiktok video…')
+      tiktok(spot.tiktok_query).then(json => {
+        const v = document.createElement('video')
+        v.autoplay = true
+        v.controls = true
+        v.muted = true
+        v.loop = true
+        v.src = json.url
+        video.appendChild(v)
+
+        const filter = document.createElement('div')
+        filter.className = 'filter'
+        filter.onmouseenter = e => (v.muted = false)
+        filter.onmouseleave = e => (v.muted = true)
+        video.appendChild(filter)
+      })
+    }
 
     g('media').appendChild(story)
   })
@@ -195,12 +232,18 @@ const loadCollection = item => {
 }
 
 const saveCollection = () => {
-  // if (saved[0].prompt === data.prompt) return
   console.log('Saving collection:', data)
   data.prompt = constants.prompt
+  if (saved.map(x => x.plan_title).indexOf(data.plan_title) > -1) return
   saved.push(data)
   localStorage.setItem('makemyday', JSON.stringify(saved))
   listCollections()
+}
+
+const trashCollection = item => {
+  const x = JSON.parse(localStorage.getItem('makemyday'))
+  x.splice(x.indexOf(item), 1)
+  localStorage.setItem('makemyday', JSON.stringify(x))
 }
 
 const listCollections = () => {
@@ -210,6 +253,7 @@ const listCollections = () => {
     const collection = document.createElement('div')
     collection.className = 'collection'
     collection.onclick = () => loadCollection(item)
+    collection.ondblclick = event => trashCollection(item)
     const date = document.createElement('div')
     date.className = 'collection-date'
     date.textContent = item.plan_date
@@ -220,3 +264,4 @@ const listCollections = () => {
     g('saved').appendChild(collection)
   })
 }
+listCollections()

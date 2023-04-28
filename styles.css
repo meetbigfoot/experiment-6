@@ -225,7 +225,31 @@ input {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  position: relative;
 }
 .story .plan-group {
   min-height: 10rem;
+  z-index: 2;
+}
+.plan-video,
+.story video {
+  bottom: 0;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+}
+.story video::after {
+  background: linear-gradient(#ff7aa1cc, #00333dcc);
+  bottom: 0;
+  content: '';
+  display: block;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
